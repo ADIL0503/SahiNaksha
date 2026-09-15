@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .routes import router as processing_router
+
 app = FastAPI(
     title="SahiNaksha API",
     description="AI-assisted urban parcel mapping and cadastral feature extraction API.",
@@ -14,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(processing_router)
 
 
 @app.get("/")
