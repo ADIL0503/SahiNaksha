@@ -34,8 +34,8 @@ export default function App() {
       const form = new FormData()
       form.append('file', file)
       const upload = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: form })
-      if (!upload.ok) throw new Error((await upload.json()).detail || 'Upload failed')
       const uploaded = await upload.json()
+      if (!upload.ok) throw new Error(uploaded.detail || 'Upload failed')
       setJobId(uploaded.job_id)
 
       const prediction = await fetch(`${API_BASE}/api/predict/${uploaded.job_id}`, { method: 'POST' })
@@ -48,6 +48,20 @@ export default function App() {
       setBusy(false)
     }
   }
+
+  function downloadGeoJSON() {
+    if (!result) return
+    const blob = new Blob([JSON.stringify({ type: 'FeatureCollection', features: result.features || [] }, null, 2)], { type: 'application/geo+json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `sahinaksha-${jobId || 'result'}.geojson`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const width = result?.image?.width || 2000
+  const height = result?.image?.height || 2000
 
   return (
     <main className="shell">
@@ -68,9 +82,8 @@ export default function App() {
             <strong>{file ? file.name : 'Choose an aerial image'}</strong>
             <span>JPG, PNG or GeoTIFF</span>
           </label>
-          <button disabled={!file || busy} onClick={runAnalysis}>
-            {busy ? 'Running AI…' : 'Detect buildings'}
-          </button>
+          <button disabled={!file || busy} onClick={runAnalysis}>{busy ? 'Running AI…' : 'Detect buildings'}</button>
+          {result && <button className="secondary" onClick={downloadGeoJSON}>Export GeoJSON</button>}
           {error && <div className="error">{error}</div>}
           {jobId && <small>Job: {jobId}</small>}
         </article>
@@ -80,7 +93,7 @@ export default function App() {
           <div className="preview">
             {preview ? <img src={preview} alt="Uploaded aerial imagery" /> : <span>Upload an image to preview it</span>}
             {preview && detections.map((item, index) => (
-              <svg key={index} className="overlay" viewBox="0 0 2000 2000" preserveAspectRatio="none">
+              <svg key={index} className="overlay" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
                 <polygon points={item.polygon.map(([x, y]) => `${x},${y}`).join(' ')} />
               </svg>
             ))}
@@ -91,8 +104,8 @@ export default function App() {
           <h2>3. Results</h2>
           <div className="metric"><span>Buildings detected</span><strong>{result?.count ?? '—'}</strong></div>
           <div className="metric"><span>Mean confidence</span><strong>{result ? `${(averageConfidence * 100).toFixed(1)}%` : '—'}</strong></div>
-          <div className="metric"><span>Output</span><strong>Pixel polygons</strong></div>
-          <p className="note">Geographic coordinates are only produced when the source imagery is georeferenced. Building footprints are not legal cadastral parcel boundaries.</p>
+          <div className="metric"><span>Geometry check</span><strong>{result ? (result.validation?.valid ? 'Valid' : 'Review') : '—'}</strong></div>
+          <p className="note">Exported polygons are in image-pixel coordinates unless a separate georeferencing step is applied. Building footprints are not legal cadastral parcel boundaries.</p>
         </article>
       </section>
     </main>
