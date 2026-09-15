@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+venv
+node_modules
+frontend/dist
+training/dataset
+training/runs
+backend/uploads
+backend/models
+*.pt
+*.pth
