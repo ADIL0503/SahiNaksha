@@ -3,16 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .model_config import get_model_path
+
 
 class YOLOInferenceService:
-    """Run building-footprint segmentation with a trained Ultralytics model.
+    """Run building-footprint segmentation with a trained Ultralytics model."""
 
-    The Ultralytics import is lazy so the API can still start when the optional
-    inference dependency/model is not installed yet.
-    """
-
-    def __init__(self, model_path: str | Path):
-        self.model_path = Path(model_path)
+    def __init__(self, model_path: str | Path | None = None):
+        self.model_path = Path(model_path) if model_path is not None else get_model_path()
         self._model: Any = None
 
     def _load_model(self) -> Any:
@@ -22,7 +20,7 @@ class YOLOInferenceService:
             except ImportError as exc:
                 raise RuntimeError(
                     "Ultralytics is required for YOLO inference. "
-                    "Install training/requirements-yolo.txt."
+                    "Install backend/requirements.txt."
                 ) from exc
 
             if not self.model_path.exists():
@@ -52,9 +50,9 @@ class YOLOInferenceService:
             if masks is None or masks.xy is None:
                 continue
 
-            classes = getattr(result, "boxes", None)
-            class_ids = classes.cls.tolist() if classes is not None else []
-            confidences = classes.conf.tolist() if classes is not None else []
+            boxes = getattr(result, "boxes", None)
+            class_ids = boxes.cls.tolist() if boxes is not None else []
+            confidences = boxes.conf.tolist() if boxes is not None else []
 
             for index, polygon in enumerate(masks.xy):
                 points = [[float(x), float(y)] for x, y in polygon]
@@ -67,3 +65,13 @@ class YOLOInferenceService:
                 )
 
         return detections
+
+
+def predict_buildings(
+    image_path: str | Path,
+    confidence: float = 0.25,
+) -> dict[str, Any]:
+    """Convenience wrapper using the configured SahiNaksha model."""
+    service = YOLOInferenceService()
+    detections = service.predict(image_path, confidence=confidence)
+    return {"detections": detections, "count": len(detections)}
