@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# ML / datasets
+training/dataset/
+training/raw_images/
+*.pt
+*.pth
+*.onnx
+
+# Generated geospatial outputs
+backend/uploads/*
+backend/outputs/*
+!backend/uploads/.gitkeep
+!backend/outputs/.gitkeep
+
+# Frontend
+node_modules/
+dist/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
