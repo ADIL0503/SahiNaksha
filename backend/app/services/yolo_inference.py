@@ -19,8 +19,7 @@ class YOLOInferenceService:
                 from ultralytics import YOLO
             except ImportError as exc:
                 raise RuntimeError(
-                    "Ultralytics is required for YOLO inference. "
-                    "Install backend/requirements.txt."
+                    "Ultralytics is required for YOLO inference. Install backend/requirements.txt."
                 ) from exc
 
             if not self.model_path.exists():
