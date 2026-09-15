@@ -3,6 +3,8 @@ from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from .services.yolo_inference import predict_buildings
+
 router = APIRouter(prefix="/api", tags=["processing"])
 UPLOAD_DIR = Path("backend/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -27,3 +29,20 @@ async def upload_image(file: UploadFile = File(...)):
         "stored_path": str(destination),
         "status": "uploaded",
     }
+
+
+@router.post("/predict/{job_id}")
+def predict_image(job_id: str):
+    """Run building-footprint segmentation for a previously uploaded image."""
+    matches = list(UPLOAD_DIR.glob(f"{job_id}.*"))
+    if not matches:
+        raise HTTPException(status_code=404, detail="Upload job not found")
+
+    try:
+        result = predict_buildings(matches[0])
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return {"job_id": job_id, "status": "processed", **result}
