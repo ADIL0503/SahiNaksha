@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routes import router as processing_router
+from .services.model_health import model_status
 
 app = FastAPI(
     title="SahiNaksha API",
@@ -27,4 +28,4 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "healthy"}
+    return {"status": "healthy", "model": model_status()}
