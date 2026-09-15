@@ -4,15 +4,15 @@ from typing import Any
 
 
 def mask_to_polygon_features(
-    masks: list[list[list[int]]],
+    masks: list[list[list[float]]],
     image_width: int,
     image_height: int,
 ) -> list[dict[str, Any]]:
-    """Convert normalized polygon masks into basic GeoJSON features.
+    """Convert pixel-coordinate segmentation polygons into GeoJSON features.
 
-    Input polygons are pixel coordinates: [[x, y], ...].  Geographic
+    The returned coordinates are still in image pixels. Geographic
     georeferencing is intentionally a separate step because it depends on the
-    source raster's CRS and affine transform.
+    source raster CRS and affine transform.
     """
     if image_width <= 0 or image_height <= 0:
         raise ValueError("Image dimensions must be positive")
