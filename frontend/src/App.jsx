@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -60,8 +60,8 @@ export default function App() {
     URL.revokeObjectURL(url)
   }
 
-  const width = result?.image?.width || 2000
-  const height = result?.image?.height || 2000
+  const width = result?.image?.width || 1000
+  const height = result?.image?.height || 1000
 
   return (
     <main className="shell">
