@@ -93,7 +93,7 @@ export default function App() {
           <div className="preview">
             {preview ? <img src={preview} alt="Uploaded aerial imagery" /> : <span>Upload an image to preview it</span>}
             {preview && detections.map((item, index) => (
-              <svg key={index} className="overlay" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+              <svg key={index} className="overlay" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
                 <polygon points={item.polygon.map(([x, y]) => `${x},${y}`).join(' ')} />
               </svg>
             ))}
